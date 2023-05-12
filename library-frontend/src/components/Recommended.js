@@ -1,17 +1,11 @@
-import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { VIEW_BOOKS } from "../queries";
 
-const Books = (props) => {
-  const [filter, setFilter] = useState(null);
-
+const Recommended = (props) => {
   const result = useQuery(VIEW_BOOKS, {
-    variables: { genre: filter },
+    variables: { genre: props.genre },
+    skip: !props.genre,
   });
-
-  useEffect(() => {
-    result.refetch({ genre: filter });
-  }, [filter, result]);
 
   if (result.loading) {
     return <div>loading...</div>;
@@ -23,16 +17,12 @@ const Books = (props) => {
 
   const books = result.data.allBooks;
 
-  const filterBooks = (filter) => {
-    setFilter(filter);
-  };
-
   return (
     <div>
       <h2>books</h2>
-      {filter && (
+      {props.genre && (
         <div>
-          in genre <b>{filter}</b>
+          in genre <b>{props.genre}</b>
         </div>
       )}
       <table>
@@ -51,18 +41,8 @@ const Books = (props) => {
           ))}
         </tbody>
       </table>
-      {props.genres.map((g) => (
-        <button
-          key={g}
-          value={g}
-          onClick={(event) => filterBooks(event.target.value)}
-        >
-          {g}
-        </button>
-      ))}
-      <button onClick={() => filterBooks(null)}>all genres</button>
     </div>
   );
 };
 
-export default Books;
+export default Recommended;

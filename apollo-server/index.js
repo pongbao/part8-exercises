@@ -140,6 +140,7 @@ const typeDefs = `
 
   type Token {
     value: String!
+    genre: String!
   }
 
   type Query {
@@ -221,15 +222,17 @@ const resolvers = {
 
       try {
         let author;
-        console.log(args.author);
+        let book;
         const returnedAuthor = await Author.findOne({ name: args.author });
-        console.log(returnedAuthor);
 
         if (!returnedAuthor) {
           author = new Author({ name: args.author });
           await author.save();
+          book = new Book({ ...args, author: author._id });
+        } else {
+          book = new Book({ ...args, author: returnedAuthor._id });
         }
-        const book = new Book({ ...args, author: author._id });
+
         const returnedBook = await book.save();
         return returnedBook.populate("author");
       } catch (error) {
@@ -297,7 +300,10 @@ const resolvers = {
         id: user._id,
       };
 
-      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
+      return {
+        value: jwt.sign(userForToken, process.env.JWT_SECRET),
+        genre: user.favoriteGenre,
+      };
     },
   },
 };

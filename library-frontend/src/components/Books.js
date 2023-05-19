@@ -3,6 +3,7 @@ import { useQuery } from "@apollo/client";
 import { VIEW_BOOKS } from "../queries";
 
 const Books = (props) => {
+  const [genres, setGenres] = useState([]);
   const [filter, setFilter] = useState(null);
 
   const result = useQuery(VIEW_BOOKS, {
@@ -10,8 +11,20 @@ const Books = (props) => {
   });
 
   useEffect(() => {
+    if (!result.loading) {
+      const fetchedGenres = [];
+      result.data.allBooks.map((book) =>
+        book.genres.map((genre) =>
+          fetchedGenres.includes(genre) ? null : fetchedGenres.push(genre)
+        )
+      );
+      setGenres(fetchedGenres);
+    }
+  }, [result]);
+
+  useEffect(() => {
     result.refetch({ genre: filter });
-  }, [filter, result]);
+  }, [filter, result, props.bookAdded]);
 
   if (result.loading) {
     return <div>loading...</div>;
@@ -51,7 +64,7 @@ const Books = (props) => {
           ))}
         </tbody>
       </table>
-      {props.genres.map((g) => (
+      {genres.map((g) => (
         <button
           key={g}
           value={g}
